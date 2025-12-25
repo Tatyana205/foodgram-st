@@ -5,9 +5,6 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.pagination import PageNumberPagination
-from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
@@ -16,7 +13,7 @@ from django.core.exceptions import ValidationError
 from rest_framework import status, parsers
 
 from .models import Subscription
-from .serializers import CustomUserSerializer, SubscriptionUserSerializer, UserAvatarSerializer
+from .serializers import SubscriptionUserSerializer
 
 User = get_user_model()
 
@@ -56,9 +53,6 @@ class EmailAuthTokenView(APIView):
 
 
 class UserAvatarView(APIView):
-    """
-    Endpoint для приема base64 изображений в JSON
-    """
     permission_classes = [IsAuthenticated]
     parser_classes = [parsers.JSONParser]
 
@@ -66,9 +60,7 @@ class UserAvatarView(APIView):
         user = request.user
         
         if user.avatar:
-            # Удаляем файл с диска
             user.avatar.delete(save=False)
-            # Очищаем поле в базе данных
             user.avatar = None
             user.save()
             deleted = True
@@ -86,16 +78,12 @@ class UserAvatarView(APIView):
         })
     
     def put(self, request):
-        # Ожидаем структуру: {"avatar": "data:image/png;base64,..."}
-        # или {"file": "data:image/png;base64,..."}
-        
         import base64
         from django.core.files.base import ContentFile
         import imghdr
         
         user = request.user
         
-        # Ищем поле с изображением
         image_data = None
         for field in ['avatar', 'file', 'image']:
             if field in request.data:
@@ -108,20 +96,16 @@ class UserAvatarView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-        # Декодируем base64
         try:
             if isinstance(image_data, str) and ';base64,' in image_data:
-                # Формат: data:image/png;base64,...
                 format, imgstr = image_data.split(';base64,')
                 ext = format.split('/')[-1]
             else:
-                # Просто base64 строка
                 imgstr = image_data
                 ext = 'jpg'
             
             data = base64.b64decode(imgstr)
             
-            # Проверяем что это действительно изображение
             image_type = imghdr.what(None, data)
             if not image_type:
                 return Response(
@@ -129,17 +113,14 @@ class UserAvatarView(APIView):
                     status=status.HTTP_400_BAD_REQUEST
                 )
             
-            # Создаем файл
             file = ContentFile(data, name=f'avatar_{user.id}.{image_type}')
             
-            # Сохраняем
             if user.avatar:
                 user.avatar.delete(save=False)
             
             user.avatar.save(file.name, file)
             user.save()
             
-            # Возвращаем результат
             from .serializers import CustomUserSerializer
             serializer = CustomUserSerializer(user, context={'request': request})
             

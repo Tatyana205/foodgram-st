@@ -4,23 +4,13 @@ from django.db.models import Q
 from .models import ShoppingCart, Favorite
 
 class RecipeFilter(django_filters.FilterSet):
-    tags = django_filters.CharFilter(method='filter_tags')
     is_favorited = django_filters.CharFilter(method='filter_is_favorited')
     is_in_shopping_cart = django_filters.CharFilter(method='filter_is_in_shopping_cart')
     author = django_filters.NumberFilter(field_name='author__id')
 
     class Meta:
         model = Recipe
-        fields = ['author', 'tags', 'is_favorited', 'is_in_shopping_cart']
-
-    def filter_tags(self, queryset, name, value):
-        if value:
-            tags = value.split(',')
-            query = Q()
-            for tag in tags:
-                query |= Q(tags__slug=tag)
-            return queryset.filter(query).distinct()
-        return queryset
+        fields = ['author', 'is_favorited', 'is_in_shopping_cart']
 
     def filter_is_favorited(self, queryset, name, value):
         user = self.request.user

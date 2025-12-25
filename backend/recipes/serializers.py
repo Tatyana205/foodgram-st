@@ -1,11 +1,14 @@
 from rest_framework import serializers
 from .models import Recipe, RecipeIngredient, Favorite, ShoppingCart, User
-from ingredients.models import Ingredient, Tag
-from ingredients.serializers import IngredientSerializer, TagSerializer
+from ingredients.models import Ingredient
+from ingredients.serializers import IngredientSerializer
 import base64
 import uuid
 from django.core.files.base import ContentFile
+from django.contrib.auth import get_user_model
+from users.serializers import AuthorSerializer
 
+User = get_user_model()
 
 class Base64ImageField(serializers.ImageField):
     def to_internal_value(self, data):
@@ -37,15 +40,8 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'measurement_unit', 'amount')
 
 
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ['id', 'username', 'email', 'first_name', 'last_name']
-
-
 class RecipeSerializer(serializers.ModelSerializer):
-    author = UserSerializer(read_only=True)
-    tags = TagSerializer(many=True, read_only=True)
+    author = AuthorSerializer(read_only=True)
     ingredients = RecipeIngredientSerializer(
         source='recipe_ingredients',
         many=True,
@@ -58,7 +54,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = (
-            'id', 'tags', 'author', 'ingredients', 'name',
+            'id', 'author', 'ingredients', 'name',
             'image', 'text', 'cooking_time',
             'is_favorited', 'is_in_shopping_cart'
         )
@@ -82,17 +78,12 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         source='recipe_ingredients',
         many=True
     )
-    tags = serializers.PrimaryKeyRelatedField(
-        queryset=Tag.objects.all(),
-        many=True,
-        required=False
-    )
     image = Base64ImageField(required=True)
 
     class Meta:
         model = Recipe
         fields = (
-            'ingredients', 'tags', 'name', 'image',
+            'ingredients', 'name', 'image',
             'text', 'cooking_time'
         )
 
@@ -113,19 +104,6 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(
                     f"Количество для ингредиента должно быть больше 0"
                 )
-        
-        return value
-
-    def validate_tags(self, value):
-        if not value:
-            raise serializers.ValidationError(
-                "Добавьте хотя бы один тег"
-            )
-        
-        if len(value) != len(set([tag.id for tag in value])):
-            raise serializers.ValidationError(
-                "Теги не должны повторяться"
-            )
         
         return value
 
@@ -151,11 +129,8 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Не указаны ингредиенты")
         
         ingredients_data = validated_data.pop('recipe_ingredients')
-        tags_data = validated_data.pop('tags', [])
         
         recipe = Recipe.objects.create(**validated_data)
-        
-        recipe.tags.set(tags_data)
         
         for item in ingredients_data:
             RecipeIngredient.objects.create(
@@ -172,10 +147,6 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         instance.text = validated_data.get('text', instance.text)
         instance.cooking_time = validated_data.get('cooking_time', instance.cooking_time)
         instance.save()
-        
-        if 'tags' in validated_data:
-            tags_data = validated_data.pop('tags')
-            instance.tags.set(tags_data)
         
         if 'recipe_ingredients' in validated_data:
             instance.recipe_ingredients.all().delete()

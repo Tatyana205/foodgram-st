@@ -49,12 +49,44 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
 class CustomUserSerializer(DjoserUserSerializer):
     is_subscribed = serializers.SerializerMethodField()
-    avatar = serializers.ImageField(required=False, allow_null=True)
+    avatar = serializers.SerializerMethodField()
     
     class Meta(DjoserUserSerializer.Meta):
         model = User
         fields = DjoserUserSerializer.Meta.fields + ('is_subscribed', 'avatar')
-        read_only_fields = ('id', 'email', 'username', 'first_name', 'last_name', 'is_subscribed')
+        read_only_fields = ('id', 'email', 'username', 'first_name', 'last_name', 'is_subscribed', 'avatar')
+    
+    def get_is_subscribed(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return obj.following.filter(user=request.user).exists()
+        return False
+    
+    def get_avatar(self, obj):
+        request = self.context.get('request')
+        if obj.avatar and hasattr(obj.avatar, 'url'):
+            if request:
+                return request.build_absolute_uri(obj.avatar.url)
+            return obj.avatar.url
+        return None
+
+
+class AuthorSerializer(serializers.ModelSerializer):
+    avatar = serializers.SerializerMethodField()
+    is_subscribed = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'first_name', 'last_name', 'email', 'avatar', 'is_subscribed']
+        read_only_fields = fields
+    
+    def get_avatar(self, obj):
+        request = self.context.get('request')
+        if obj.avatar and hasattr(obj.avatar, 'url'):
+            if request:
+                return request.build_absolute_uri(obj.avatar.url)
+            return obj.avatar.url
+        return None
     
     def get_is_subscribed(self, obj):
         request = self.context.get('request')
@@ -78,8 +110,12 @@ class SubscriptionUserSerializer(CustomUserSerializer):
         if recipes_limit and recipes_limit.isdigit():
             recipes = recipes[:int(recipes_limit)]
         
-        from recipes.serializers import RecipeSerializer
-        return RecipeSerializer(recipes, many=True, context={'request': request}).data
+        class SimpleRecipeSerializer(serializers.ModelSerializer):
+            class Meta:
+                model = Recipe
+                fields = ('id', 'name', 'image', 'cooking_time')
+        
+        return SimpleRecipeSerializer(recipes, many=True, context={'request': request}).data
     
     def get_recipes_count(self, obj):
         return obj.recipes.count()

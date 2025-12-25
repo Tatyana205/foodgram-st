@@ -1,7 +1,7 @@
 from django.db import models
 from django.core.validators import MinValueValidator
 from users.models import User
-from ingredients.models import Ingredient, Tag
+from ingredients.models import Ingredient
 
 class Recipe(models.Model):
     author = models.ForeignKey(
@@ -23,11 +23,6 @@ class Recipe(models.Model):
         Ingredient,
         through='RecipeIngredient',
         verbose_name='Ингредиенты'
-    )
-    tags = models.ManyToManyField(
-        Tag,
-        related_name='recipes',
-        verbose_name='Теги'
     )
     cooking_time = models.PositiveSmallIntegerField(
         validators=[MinValueValidator(1)],
