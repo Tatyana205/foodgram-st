@@ -10,11 +10,7 @@ services:
     build: ../backend
     volumes:
       - media:/app/media
-      - type: volume
-        source: static
-        target: /app/static
-        volume:
-          subpath: static
+      - static:/static
     environment:
       - DEBUG=True
       - SECRET_KEY=test-key-123
