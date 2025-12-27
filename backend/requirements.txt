@@ -38,3 +38,6 @@ sqlparse==0.5.3
 typing_extensions==4.13.2
 uritemplate==4.1.1
 urllib3==2.2.3
+pytest==6.2.5
+pytest-django==4.4.0
+model-bakery==1.8.0
