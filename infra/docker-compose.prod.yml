@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:14-alpine
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  frontend:
+    image: carnationisred/foodgram_frontend
+    env_file:
+      - .env
+    volumes:
+      - static:/app/result_build/
+
+  backend:
+    image: carnationisred/foodgram_backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - media:/app/media
+      - static:/static
+    depends_on:
+      - db
+      - frontend
+
+  gateway:
+    image: carnationisred/foodgram_gateway
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "80:80"
+    volumes:
+      - static:/usr/share/nginx/html/
+      - media:/var/html/media/
+    depends_on:
+      - backend
+
+
+volumes:
+  pg_data:
+  static:
+  media:
