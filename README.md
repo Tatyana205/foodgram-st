@@ -57,3 +57,9 @@ http://localhost/api/docs
 ```
 http://localhost/admin
 ```
+
+#### Создание суперпользователя
+
+```
+docker compose -f <имя compose файла> exec backend python manage.py createsuperuser
+```
