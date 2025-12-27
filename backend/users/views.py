@@ -172,6 +172,19 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     pagination_class = SubscriptionPagination
 
+    permission_classes_by_action = {
+        'create': [AllowAny],
+        'list': [AllowAny],
+        'retrieve': [AllowAny],
+        'me': [IsAuthenticated],
+        'subscribe': [IsAuthenticated],
+        'subscriptions': [IsAuthenticated],
+        'set_password': [IsAuthenticated],
+        'update': [IsAuthenticated],
+        'partial_update': [IsAuthenticated],
+        'destroy': [IsAuthenticated],
+    }
+
     def get_serializer_class(self):
         if self.action == 'create':
             from .serializers import UserCreateSerializer
@@ -180,9 +193,9 @@ class UserViewSet(viewsets.ModelViewSet):
         return CustomUserSerializer
     
     def get_permissions(self):
-        if self.request.method == 'POST':
-            return [permissions.AllowAny()]
-        return [permissions.IsAuthenticated()]
+        if self.action in self.permission_classes_by_action:
+            return [perm() for perm in self.permission_classes_by_action[self.action]]
+        return [IsAuthenticated()]
 
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def me(self, request):
