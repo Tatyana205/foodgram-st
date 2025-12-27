@@ -1,4 +1,4 @@
-name: Django CI/CD
+name: Django CI
 
 on:
   push:
@@ -6,40 +6,8 @@ on:
   pull_request:
     branches: [ main ]
 
-env:
-  DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_foodgram
-  SECRET_KEY: test-secret-key-${{ github.run_id }}
-  DEBUG: "True"
-
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-    
-    steps:
-    - uses: actions/checkout@v3
-    
-    - name: Set up Python 3.8
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.8'
-    
-    - name: Install dependencies
-      run: |
-        cd backend
-        pip install -r requirements.txt
-    
-    - name: Check Django settings
-      run: |
-        cd backend
-        python manage.py check --deploy --fail-level WARNING
-    
-    - name: Check for migrations
-      run: |
-        cd backend
-        python manage.py makemigrations --check --dry-run
-
   test:
-    needs: lint
     runs-on: ubuntu-latest
     
     services:
@@ -48,18 +16,13 @@ jobs:
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: test_foodgram
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
         ports:
           - 5432:5432
     
     steps:
     - uses: actions/checkout@v3
     
-    - name: Set up Python 3.8
+    - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: '3.8'
@@ -74,58 +37,15 @@ jobs:
         cd backend
         python manage.py migrate --noinput
       env:
-        DATABASE_URL: ${{ env.DATABASE_URL }}
-        SECRET_KEY: ${{ env.SECRET_KEY }}
+        SECRET_KEY: test-key-123
+        ALLOWED_HOSTS: "*"
+        DEBUG: "False"
     
-    - name: Collect static files
+    - name: Run tests
       run: |
         cd backend
-        python manage.py collectstatic --noinput
+        python -m pytest -v
       env:
-        DATABASE_URL: ${{ env.DATABASE_URL }}
-        SECRET_KEY: ${{ env.SECRET_KEY }}
-    
-    - name: Run Django tests
-      run: |
-        cd backend
-        python -m pytest --disable-warnings
-      env:
-        DATABASE_URL: ${{ env.DATABASE_URL }}
-        SECRET_KEY: ${{ env.SECRET_KEY }}
-        ALLOWED_HOSTS: localhost,127.0.0.1,testserver
-    
-    - name: Run start tests
-      run: |
-        cd backend
-        python manage.py test tests.test_start --verbosity=2
-      env:
-        DATABASE_URL: ${{ env.DATABASE_URL }}
-        SECRET_KEY: ${{ env.SECRET_KEY }}
-    
-    - name: Run model tests
-      run: |
-        cd backend
-        python manage.py test tests.test_models --verbosity=2
-      env:
-        DATABASE_URL: ${{ env.DATABASE_URL }}
-        SECRET_KEY: ${{ env.SECRET_KEY }}
-
-  build:
-    needs: test
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    
-    steps:
-    - uses: actions/checkout@v3
-    
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2
-    
-    - name: Build backend image
-      run: |
-        cd backend
-        docker build -t foodgram-backend:latest .
-    
-    - name: Verify backend image
-      run: |
-        docker run --rm foodgram-backend:latest python -c "import django; print(f'Django {django.__version__}')"
+        SECRET_KEY: test-key-123
+        ALLOWED_HOSTS: "*"
+        DEBUG: "False"

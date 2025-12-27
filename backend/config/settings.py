@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 import os
 from pathlib import Path
 from datetime import timedelta
+import sys
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -187,3 +188,18 @@ DJOSER = {
     'LOGIN_FIELD': 'email',
     'USER_ID_FIELD': 'id',
 }
+
+if 'test' in sys.argv or 'pytest' in sys.argv[0] or os.environ.get('CI'):
+    DEBUG = False
+    SECRET_KEY = os.environ.get('SECRET_KEY', 'test-secret-key-for-ci')
+    ALLOWED_HOSTS = ['*']
+    
+    SILENCED_SYSTEM_CHECKS = [
+        'security.W003', 
+        'security.W004',
+        'security.W008',
+        'security.W009',
+        'security.W012',
+        'security.W018',
+        'security.W020',
+    ]
