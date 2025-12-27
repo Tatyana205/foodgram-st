@@ -2,7 +2,6 @@ from django.test import TestCase, Client
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 import json
-import os
 
 User = get_user_model()
 
@@ -18,7 +17,6 @@ class ViewTests(TestCase):
             last_name='Test'
         )
     
-    @unittest.skipIf(os.environ.get('CI'), "Skipping in CI - no templates")
     def test_home_page(self):
         response = self.client.get('/')
         self.assertIn(response.status_code, [200, 301, 302])
