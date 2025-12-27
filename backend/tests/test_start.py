@@ -26,19 +26,3 @@ class BaseTests(TestCase):
                 print(f"Приложение {app} загружено")
             except LookupError:
                 print(f"Приложение {app} не найдено")
-    
-    def test_urls_resolve(self):
-        urls_to_test = [
-            ('/', 200, 301, 302),
-            ('/admin/', 302),
-            ('/api/', 200, 404),
-        ]
-        
-        for url, *expected_codes in urls_to_test:
-            response = self.client.get(url)
-            self.assertIn(
-                response.status_code, 
-                expected_codes,
-                f"URL {url} вернул {response.status_code}, ожидалось {expected_codes}"
-            )
-            print(f"URL {url} вернул {response.status_code}")

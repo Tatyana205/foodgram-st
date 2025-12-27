@@ -203,10 +203,3 @@ if 'test' in sys.argv or 'pytest' in sys.argv[0] or os.environ.get('CI'):
         'security.W018',
         'security.W020',
     ]
-
-    TEMPLATES[0]['OPTIONS']['loaders'] = [
-        ('django.template.loaders.cached.Loader', [
-            'django.template.loaders.filesystem.Loader',
-            'django.template.loaders.app_directories.Loader',
-        ])
-    ]

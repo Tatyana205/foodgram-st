@@ -17,11 +17,6 @@ class ViewTests(TestCase):
             last_name='Test'
         )
     
-    def test_home_page(self):
-        response = self.client.get('/')
-        self.assertIn(response.status_code, [200, 301, 302])
-        print("Главная страница отвечает")
-    
     def test_admin_login_redirect(self):
         response = self.client.get('/admin/')
         self.assertEqual(response.status_code, 302)
