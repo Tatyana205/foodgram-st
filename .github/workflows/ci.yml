@@ -94,10 +94,10 @@ jobs:
         SECRET_KEY: ${{ env.SECRET_KEY }}
         ALLOWED_HOSTS: localhost,127.0.0.1,testserver
     
-    - name: Run smoke tests
+    - name: Run start tests
       run: |
         cd backend
-        python manage.py test tests.test_smoke --verbosity=2
+        python manage.py test tests.test_start --verbosity=2
       env:
         DATABASE_URL: ${{ env.DATABASE_URL }}
         SECRET_KEY: ${{ env.SECRET_KEY }}
