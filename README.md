@@ -63,3 +63,9 @@ http://localhost/admin
 ```
 docker compose -f <имя compose файла> exec backend python manage.py createsuperuser
 ```
+
+#### Загрузка ингридиентов
+
+```
+docker compose -f <имя compose файла> exec backend python manage.py load_ingredients
+```

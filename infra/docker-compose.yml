@@ -31,8 +31,10 @@ services:
       - media:/app/media
       - static:/static
     depends_on:
-      - db
-      - frontend
+      db:
+        condition: service_healthy
+      frontend:
+        condition: service_started
 
   gateway:
     build:
