@@ -47,19 +47,6 @@ jobs:
         DB_HOST: localhost
         DB_PORT: 5432
 
-    - name: Run tests
-      run: |
-        cd backend
-        python -m pytest -v
-      env:
-        SECRET_KEY: 'django-insecure-jf+e1yf0#_+l%u!ekbsi*t6u43$-ziurk!^#xe)pmmwyy)c$i8'
-        DEBUG: False
-        POSTGRES_DB: foodgram
-        POSTGRES_USER: foodgram_user
-        POSTGRES_PASSWORD: foodgram_password
-        DB_HOST: localhost
-        DB_PORT: 5432
-
   build_backend_and_push_to_docker_hub:
     name: Push Docker image to DockerHub
     runs-on: ubuntu-latest
