@@ -1,5 +1,6 @@
 import django_filters
 from rest_framework.filters import SearchFilter
+
 from recipes.models import Favorite, Recipe, ShoppingCart
 
 

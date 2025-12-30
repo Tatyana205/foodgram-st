@@ -7,23 +7,27 @@ from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet as DjoserUserViewSet
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
+from rest_framework.filters import SearchFilter
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import (
+    AllowAny,
+    IsAuthenticated,
+    IsAuthenticatedOrReadOnly,
+)
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.filters import SearchFilter
 
+from api.filters import IngredientSearchFilter, RecipeFilter
 from api.serializers import (
-    SubscriptionCreateSerializer,
-    SubscriptionUserSerializer,
-    UserAvatarSerializer,
+    FavoriteSerializer,
     IngredientSerializer,
     RecipeCreateSerializer,
     RecipeSerializer,
-    FavoriteSerializer,
-    ShoppingCartSerializer
+    ShoppingCartSerializer,
+    SubscriptionCreateSerializer,
+    SubscriptionUserSerializer,
+    UserAvatarSerializer,
 )
-from api.filters import RecipeFilter, IngredientSearchFilter
 from recipes.models import Favorite, Ingredient, Recipe, RecipeIngredient, ShoppingCart
 from users.models import Subscription
 
@@ -174,10 +178,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return RecipeSerializer
 
     def get_queryset(self):
-        queryset = (
-            Recipe.objects
-            .select_related("author")
-            .prefetch_related("recipe_ingredients__ingredient")
+        queryset = Recipe.objects.select_related("author").prefetch_related(
+            "recipe_ingredients__ingredient"
         )
 
         user = self.request.user
@@ -210,15 +212,16 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 "recipe": recipe.id,
             }
             serializer = serializer_class(
-                data=data,
-                context=self.get_serializer_context()
+                data=data, context=self.get_serializer_context()
             )
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         if request.method == "DELETE":
-            deleted_count, _ = model.objects.filter(user=request.user, recipe=recipe).delete()
+            deleted_count, _ = model.objects.filter(
+                user=request.user, recipe=recipe
+            ).delete()
             if deleted_count == 0:
                 return Response(
                     {"error": f"Рецепт не был в {action_name}"},

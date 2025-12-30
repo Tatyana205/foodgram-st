@@ -30,10 +30,7 @@ class Ingredient(models.Model):
 
 class Recipe(models.Model):
     author = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="recipes",
-        verbose_name="Автор"
+        User, on_delete=models.CASCADE, related_name="recipes", verbose_name="Автор"
     )
     name = models.CharField(max_length=200, verbose_name="Название")
     image = models.ImageField(upload_to="recipes/", verbose_name="Картинка")
@@ -61,9 +58,7 @@ class Recipe(models.Model):
 
 class RecipeIngredient(models.Model):
     recipe = models.ForeignKey(
-        Recipe,
-        on_delete=models.CASCADE,
-        related_name="recipe_ingredients"
+        Recipe, on_delete=models.CASCADE, related_name="recipe_ingredients"
     )
     ingredient = models.ForeignKey(
         Ingredient, on_delete=models.CASCADE, verbose_name="Ингредиент"
@@ -96,13 +91,13 @@ class UserRecipeRelation(models.Model):
         User,
         on_delete=models.CASCADE,
         related_name="%(class)ss",
-        verbose_name="Пользователь"
+        verbose_name="Пользователь",
     )
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
         related_name="in_%(class)ss",
-        verbose_name="Рецепт"
+        verbose_name="Рецепт",
     )
     created = models.DateTimeField(auto_now_add=True, verbose_name="Дата добавления")
 

@@ -3,12 +3,12 @@ import uuid
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
-from djoser.serializers import UserSerializer as DjoserUserSerializer
 from django.core.files.base import ContentFile
-from rest_framework.validators import UniqueTogetherValidator
+from djoser.serializers import UserSerializer as DjoserUserSerializer
 from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator
 
-from recipes.models import Ingredient, Recipe, RecipeIngredient, Favorite, ShoppingCart
+from recipes.models import Favorite, Ingredient, Recipe, RecipeIngredient, ShoppingCart
 from users.models import Subscription
 
 User = get_user_model()
@@ -314,6 +314,7 @@ class ShortRecipeSerializer(serializers.ModelSerializer):
         model = Recipe
         fields = ("id", "name", "image", "cooking_time")
 
+
 class FavoriteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Favorite
@@ -325,17 +326,14 @@ class FavoriteSerializer(serializers.ModelSerializer):
                 message="Рецепт уже в избранном",
             )
         ]
-    
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["user"].required = False
         self.fields["recipe"].required = False
 
     def to_representation(self, instance):
-        return RecipeSerializer(
-            instance.recipe,
-            context=self.context
-        ).data
+        return RecipeSerializer(instance.recipe, context=self.context).data
 
 
 class ShoppingCartSerializer(serializers.ModelSerializer):
@@ -356,7 +354,4 @@ class ShoppingCartSerializer(serializers.ModelSerializer):
         self.fields["recipe"].required = False
 
     def to_representation(self, instance):
-        return RecipeSerializer(
-            instance.recipe,
-            context=self.context
-        ).data
+        return RecipeSerializer(instance.recipe, context=self.context).data
