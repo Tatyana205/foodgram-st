@@ -118,7 +118,7 @@ class UserViewSet(DjoserUserViewSet):
             deleted_count, _ = Subscription.objects.filter(
                 user=request.user, author=author
             ).delete()
-            if not deleted_count == 0:
+            if deleted_count == 0:
                 return Response(
                     {"error": "Вы не подписаны на этого пользователя"},
                     status=status.HTTP_400_BAD_REQUEST,
