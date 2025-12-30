@@ -1,5 +1,5 @@
 import django_filters
-
+from rest_framework.filters import SearchFilter
 from recipes.models import Favorite, Recipe, ShoppingCart
 
 
@@ -29,3 +29,7 @@ class RecipeFilter(django_filters.FilterSet):
             )
             return queryset.filter(id__in=cart_ids)
         return queryset
+
+
+class IngredientSearchFilter(SearchFilter):
+    search_param = "name"

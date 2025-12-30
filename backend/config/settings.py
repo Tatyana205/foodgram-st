@@ -130,9 +130,9 @@ SIMPLE_JWT = {
 
 DJOSER = {
     "SERIALIZERS": {
-        "user": "api.serializers.users.CustomUserSerializer",
-        "current_user": "api.serializers.users.CustomUserSerializer",
-        "user_create": "api.serializers.users.UserCreateSerializer",
+        "user": "api.serializers.CustomUserSerializer",
+        "current_user": "api.serializers.CustomUserSerializer",
+        "user_create": "api.serializers.UserCreateSerializer",
     },
     "PERMISSIONS": {
         "user": ["rest_framework.permissions.IsAuthenticated"],

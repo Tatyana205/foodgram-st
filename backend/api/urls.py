@@ -4,8 +4,8 @@ from drf_yasg.views import get_schema_view
 from rest_framework import permissions
 from rest_framework.routers import DefaultRouter
 
-from api.views.recipes import IngredientViewSet, RecipeViewSet
-from api.views.users import UserViewSet
+from api.views import IngredientViewSet, RecipeViewSet
+from api.views import UserViewSet
 
 router = DefaultRouter()
 router.register("recipes", RecipeViewSet, basename="recipes")
